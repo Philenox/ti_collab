@@ -1,21 +1,21 @@
 #include <msp430.h>
 #include "stdint.h"
 
-volatile uint8_t count;
-volatile uint8_t global_buf[8];
+volatile uint8_t count;             // this is the the global counter that counts for the PWM
+volatile uint8_t global_buf[8];     // this is the the data for each buzzer
 void spi_init();
 void pin_init (void);
 void set_timer(unsigned int);
 
 void main()
 {
-  pin_init();
-  spi_init();
-  WDTCTL = WDTPW + WDTHOLD;
+  pin_init();               //initialize pins
+  spi_init();               //initialize spi
+  WDTCTL = WDTPW + WDTHOLD; //disable watch dog!!!
   
-  __bis_SR_register(GIE);  // Enable interrupts (set GIE in SR)
-  count = 0;
-  set_timer(1062); // this corresponds to 5 bits of resolution at 20Hz at 1Mhz
+  __bis_SR_register(GIE);   // Enable interrupts (set GIE in SR)
+  count = 0;                // start the count at 0
+  set_timer(1062);          // this corresponds to 5 bits of resolution at 20Hz at 1Mhz: 1e6 / 31 / 20
 
   while(1)
   {
@@ -26,20 +26,20 @@ void main()
 void set_timer(unsigned int delay_time)
 {
   TA0CCR0 = delay_time;                    // Delay to allow Ref to settle
-  TA0CCTL0 |= CCIE;                          // Compare-mode interrupt
-  TA0CTL = TASSEL_2 + MC_1;           // TACLK = SMCLK, Up mode
+  TA0CCTL0 |= CCIE;                        // Compare-mode interrupt
+  TA0CTL = TASSEL_2 + MC_1;                // TACLK = SMCLK, Up mode
 }
 
 void spi_init()
 {
   // USCI-A specific SPI setup 
-  UCA1CTL1 |= UCSWRST;
+  UCA1CTL1 |= UCSWRST;                            // Reset  
   UCA1CTL0 = UCCKPH | UCMSB | UCMODE_0 | UCSYNC;  // SPI mode 0, slave
-  UCA1BR0 = 0x01;  // SPI clocked at same speed as SMCLK
+  UCA1BR0 = 0x01;                                 // SPI clocked at same speed as SMCLK
   UCA1BR1 = 0x00;
-  UCA1IE |= UCRXIE;
-  UCA1CTL1 |= UCSSEL_2;  // Clock = SMCLK, clear UCSWRST and enables USCI_B module.
-  UCA1CTL1 &= ~UCSWRST;
+  UCA1IE |= UCRXIE;                               // Enable reset on RX
+  UCA1CTL1 |= UCSSEL_2;                           // Clock = SMCLK, clear UCSWRST and enables USCI_B module.
+  UCA1CTL1 &= ~UCSWRST;                           // Disable reset
 }
 
 void pin_init (void)
@@ -66,18 +66,19 @@ __interrupt void TA0_ISR(void)
   for(int i = 0; i < 8 ; i++)
     buf[i] = global_buf[i];
   
-  count = count + 1;
-  if (count >= 31)
+  count = count + 1; // increment global counter
+  if (count >= 31)   // if counter exeeds 31, claer
   {
     count = 0;
   }
-    
+                    // when the count is 0, turn all outputs on
   if(count == 0)
   {
     P2OUT |= (1<<6) | (1<<1) | (1<<2) | (1<<3);
     P6OUT |= (1<<0) | (1<<1) | (1<<2) | (1<<3);
   }
   
+  //when when the counter reaches the buffer number, turn it off
   if(count == buf[0])
     P2OUT &= ~(1<<6);
   if(count == buf[1])
@@ -100,6 +101,6 @@ __interrupt void TA0_ISR(void)
 
 #pragma vector = USCI_A1_VECTOR
 __interrupt void USCI_RX(void) {
-    uint8_t data = UCA1RXBUF;
-    global_buf[data>>5] = 0x1F & data;
+    uint8_t data = UCA1RXBUF;           // grab the data
+    global_buf[data>>5] = 0x1F & data;  // store the data
 }
