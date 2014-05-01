@@ -46,9 +46,23 @@ NextState1=-1
 [Action Register]
 Break=-1
 State Storage=-1
+[DebugChecksum]
+Checksum=560418202
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
 [Breakpoints]
 Count=0
 [FET]
+Clock mode=46
 Extended Clock mode=0
 Secure Password=
 Emulation mode=0

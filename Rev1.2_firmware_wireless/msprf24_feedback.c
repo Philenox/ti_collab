@@ -34,7 +34,7 @@ void spi_init()
 {
 	// Configure ports on MSP430 device for USCI_A1
         P4DIR |= BIT0 | BIT4;
-        P4DIR &= ~(BIT4);
+        P4DIR &= ~(BIT5);
 	P4SEL |= BIT0 | BIT4 | BIT5;
 	// USCI-A specific SPI setup 
 	UCA1CTL1 |= UCSWRST;
@@ -49,7 +49,7 @@ char spi_transfer(char inb)
 	UCA1IE = UCRXIE;
         UCA1TXBUF = inb;
 	do {
-		//LPM0;
+            LPM0;
 	} while (UCA1STAT & UCBUSY);
 	return UCA1RXBUF;
 }
@@ -294,7 +294,6 @@ void msprf24_init()
         P1IFG &= ~nrfIRQpin;  // Clear any outstanding IRQ
         P1IE |= nrfIRQpin;    // Enable IRQ interrupt
 	
-
 	// Setup CSN/CE ports
 	P4DIR |= nrfCSNpin;
 	CSN_DIS;

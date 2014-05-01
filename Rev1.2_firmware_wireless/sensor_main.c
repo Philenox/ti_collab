@@ -55,10 +55,10 @@ void main()
 
 			msprf24_get_irq_reason();
 			if (rf_irq & RF24_IRQ_TX){
-                          //P2OUT |= (1<<2);
+                          P2OUT |= (1<<2);
 			}
 			if (rf_irq & RF24_IRQ_TXFAILED){
-                          //P2OUT ^= (1<<2);
+                          P2OUT ^= (1<<2);
 			}
 
 			msprf24_irq_clear(rf_irq);

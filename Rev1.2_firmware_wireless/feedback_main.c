@@ -11,46 +11,23 @@
  * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
 #include <msp430.h>
 #include "msprf24.h"
 #include "nrf_userconfig_feedback.h"
 #include "stdint.h"
-#include "UART.h"
 
-void initialize_pwm (void);
-void set_timer(unsigned int delay_time);
+void radio_setup(void);
 
 volatile unsigned int user;
 char buf[32];
 uint8_t increment;
 
+
+
 void main()
 {
-	char addr[5];
-
 	WDTCTL = WDTHOLD | WDTPW;
-             
-	// Initial values for nRF24L01+ library config variables //
-	rf_crc = RF24_EN_CRC | RF24_CRCO; // CRC enabled, 16-bit
-	rf_addr_width      = 5;
-	rf_speed_power     = RF24_SPEED_1MBPS | RF24_POWER_0DBM;
-	rf_channel         = 120; 
-	msprf24_init();
-	msprf24_set_pipe_packetsize(0, 32);
-	msprf24_open_pipe(0, 1);  // Open pipe#0 with Enhanced ShockBurst
-	// Set our RX address
-	addr[0] = 0xDE;	addr[1] = 0xAD;	addr[2] = 0xBE;	addr[3] = 0xEF;	addr[4] = 0x00;
-	w_rx_addr(0, addr);
-	// Receive mode
-	if (!(RF24_QUEUE_RXEMPTY & msprf24_queue_state())) {
-		flush_rx();
-	}
-	msprf24_activate_rx();
-        
-        initialize_pwm();
-        set_timer(200);
-  
+        radio_setup();     
 	LPM4;
 	while (1) {
 		if (rf_irq & RF24_IRQ_FLAGGED) {
@@ -68,4 +45,30 @@ void main()
 		LPM4;
 	}
 }
+
+void radio_setup(void)
+{
+        char addr[5];
+  	// Initial values for nRF24L01+ library config variables //
+	rf_crc = RF24_EN_CRC | RF24_CRCO; // CRC enabled, 16-bit
+	rf_addr_width      = 5;
+	rf_speed_power     = RF24_SPEED_1MBPS | RF24_POWER_0DBM;
+	rf_channel         = 120;
+
+	msprf24_init();
+	msprf24_set_pipe_packetsize(0, 32);
+	msprf24_open_pipe(0, 1);  // Open pipe#0 with Enhanced ShockBurst
+
+	// Set our RX address
+	addr[0] = 0xDE;	addr[1] = 0xAD;	addr[2] = 0xBE;	addr[3] = 0xEF;	addr[4] = 0x00;
+	w_rx_addr(0, addr);
+
+	// Receive mode
+	if (!(RF24_QUEUE_RXEMPTY & msprf24_queue_state())) {
+		flush_rx();
+	}
+	msprf24_activate_rx();
+}
+
+
 
