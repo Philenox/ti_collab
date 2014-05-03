@@ -22,8 +22,6 @@ volatile unsigned int user;
 char buf[32];
 uint8_t increment;
 
-
-
 void main()
 {
 	WDTCTL = WDTHOLD | WDTPW;
