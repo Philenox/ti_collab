@@ -23,28 +23,13 @@
 /* CPU clock cycles for the specified amounts of time--accurate minimum delays
  * required for reliable operation of the nRF24L01+'s state machine.
  */
-/* Settings for 1MHz MCLK.
-#define DELAY_CYCLES_5MS       5000
-#define DELAY_CYCLES_130US     130
-#define DELAY_CYCLES_15US      15
- */
 
-/* Settings for 8MHz MCLK.
+// Settings for 8MHz MCLK.
 #define DELAY_CYCLES_5MS       40000
 #define DELAY_CYCLES_130US     1040
 #define DELAY_CYCLES_15US      120
- */
 
-/* Settings for 16MHz MCLK */
-#define DELAY_CYCLES_5MS       80000
-#define DELAY_CYCLES_130US     2080
-#define DELAY_CYCLES_15US      240
 
-/* Settings for 24MHz MCLK.
-#define DELAY_CYCLES_5MS       120000
-#define DELAY_CYCLES_130US     3120
-#define DELAY_CYCLES_15US      360
- */
 
 /* SPI port--Select which USCI port we're using.
  * Applies only to USCI devices.  USI users can keep these

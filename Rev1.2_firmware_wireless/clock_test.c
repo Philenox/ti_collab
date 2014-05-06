@@ -1,5 +1,6 @@
 
 #include "io430.h"
+#include "uart.h"
 
 int main( void )
 {
@@ -13,12 +14,14 @@ int main( void )
   UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
  
   
+  uart_setup();
+  
   P2DIR |= (1<<6) + (1<<7);
   while(1)
   {
     P2OUT ^= (1<<6) | (1<<7); //LED toggle
     __delay_cycles(1000000); //delay 1 million cycles
+    uart_putc('a');
   }
 
-  return 0;
 }
