@@ -12,7 +12,7 @@ int main( void )
   UCSCTL3 |= SELREF1; //set fll reference base on REFOCLK
   UCSCTL2 |= FLLD0 + FLLD1 + 31; //set FLLD = 8, FLLN = 31, 32.756KHz * 8 *31 = 8MHz
   UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
- 
+  
   
   uart_setup();
   

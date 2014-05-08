@@ -20,10 +20,12 @@
 volatile unsigned int user;
 void radio_init();
 
+
 void main()
 {
 	char buf[32];
-
+        uint8_t data = 0;
+        
         WDTCTL = WDTHOLD | WDTPW;
         
         UCSCTL0 |= (31 <<8); // set DCO to 31
@@ -37,24 +39,28 @@ void main()
         P2DIR |= (1<<2); //LED debug pin
 	while(1){
 		__delay_cycles(100000);
-		buf[0]= 255;
+                for(uint8_t i = 0; i < 32; i++)
+                {
+                  buf[i] = data;
+                  data++;
+                }
 		w_tx_payload(32, buf);
 		msprf24_activate_tx();
 		LPM4;
 
 		if (rf_irq & RF24_IRQ_FLAGGED) {
-			rf_irq &= ~RF24_IRQ_FLAGGED;
+                    rf_irq &= ~RF24_IRQ_FLAGGED;
 
-			msprf24_get_irq_reason();
-			if (rf_irq & RF24_IRQ_TX){
-                          P2OUT |= (1<<2);
-			}
-			if (rf_irq & RF24_IRQ_TXFAILED){
-                          P2OUT ^= (1<<2);
-			}
+                    msprf24_get_irq_reason();
+                    if (rf_irq & RF24_IRQ_TX){
+                      P2OUT |= (1<<2);
+                    }
+                    if (rf_irq & RF24_IRQ_TXFAILED){
+                      P2OUT ^= (1<<2);
+                    }
 
-			msprf24_irq_clear(rf_irq);
-			user = msprf24_get_last_retransmits();
+                    msprf24_irq_clear(rf_irq);
+                    user = msprf24_get_last_retransmits();
 		}
 	}
 }

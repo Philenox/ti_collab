@@ -12,9 +12,11 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include <msp430.h>
+#include "uart.h"
 #include "msprf24.h"
 #include "nrf_userconfig_feedback.h"
 #include "stdint.h"
+
 
 void radio_setup(void);
 
@@ -32,6 +34,7 @@ void main()
         UCSCTL3 |= SELREF1; //set fll reference base on REFOCLK
         UCSCTL2 |= FLLD0 + FLLD1 + 31; //set FLLD = 8, FLLN = 31, 32.756KHz * 8 *31 = 8MHz
         UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
+ 
         
         radio_setup();     
 	LPM4;
@@ -42,8 +45,8 @@ void main()
 		}
 		if (rf_irq & RF24_IRQ_RX || msprf24_rx_pending()) {
 			r_rx_payload(32, buf);
-			msprf24_irq_clear(RF24_IRQ_RX);
-			user = buf[0];
+                        msprf24_irq_clear(RF24_IRQ_RX);
+                        user = buf[0];
 		} 
                 else {
 			user = 0xFF;

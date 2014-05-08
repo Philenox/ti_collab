@@ -227,7 +227,7 @@
         </option>
         <option>
           <name>UsbComPort</name>
-          <state>Automatic</state>
+          <state>HID0025:COM6</state>
         </option>
         <option>
           <name>FetConnection</name>
