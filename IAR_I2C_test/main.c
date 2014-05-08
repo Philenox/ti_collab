@@ -28,6 +28,9 @@ int main( void )
   
   P2DIR |= 1<<2;
   //P4DIR |= 1<<2;
+  
+  i2c_setup();
+  
   while(1){
     P2OUT ^= 1<<2;
     //P4OUT ^= 1<<2;
