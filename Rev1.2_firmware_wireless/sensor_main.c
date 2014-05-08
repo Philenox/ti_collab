@@ -16,6 +16,7 @@
 #include "msprf24.h"
 #include "nrf_userconfig_sensor.h"
 #include "stdint.h"
+#include "adc.h"
 
 volatile unsigned int user;
 void radio_init();
@@ -25,6 +26,7 @@ void main()
 {
 	char buf[32];
         uint8_t data = 0;
+        long temp;
         
         WDTCTL = WDTHOLD | WDTPW;
         
@@ -35,14 +37,16 @@ void main()
         UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
               
         radio_init();
+        adc_setup();
         
         P2DIR |= (1<<2); //LED debug pin
 	while(1){
 		__delay_cycles(100000);
-                for(uint8_t i = 0; i < 32; i++)
+                for(uint8_t i = 0; i < 8; i = i+ 2)
                 {
-                  buf[i] = data;
-                  data++;
+                  temp = adc_sample(i);
+                  buf[i] = temp & 0xff;
+                  buf[i] = temp >>8;
                 }
 		w_tx_payload(32, buf);
 		msprf24_activate_tx();
