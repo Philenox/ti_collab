@@ -41,12 +41,12 @@ void main()
 
   P2DIR |= (1<<2); //LED debug pin
   while(1){
+    
+    
+    temp = adc_sample(0);
+    buf[0] = temp >> 4; //lop off the least significant bits
     __delay_cycles(1000000);
     
-    buf[0] ^= 0xff;
-    
-    //temp = adc_sample(0);
-    //buf[0] = temp >> 4; //lop off the least significant bits
     
     w_tx_payload(32, buf);
     msprf24_activate_tx();
