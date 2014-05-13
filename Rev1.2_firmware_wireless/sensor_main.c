@@ -37,20 +37,20 @@ void main()
         
   radio_init();
   adc_setup();
-  buf[0] = 0;
+  for (int i= 0; i < 32; i++)
+    buf[i] = 0;
 
   P2DIR |= (1<<2); //LED debug pin
   while(1){
-    
-    
     temp = adc_sample(0);
     buf[0] = temp >> 4; //lop off the least significant bits
+    
     __delay_cycles(1000000);
     
     
     w_tx_payload(32, buf);
     msprf24_activate_tx();
-    //LPM4;
+    LPM4;
 
     if (rf_irq & RF24_IRQ_FLAGGED) {
       rf_irq &= ~RF24_IRQ_FLAGGED;
