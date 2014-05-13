@@ -12,20 +12,20 @@ void uart_setup(void)
   UCA0MCTL |= UCBRS1; //this is used for buad rate selection
   UCA0CTL1 &= ~(UCSWRST); //disable reset
   
-  UCA0IE |= UCTXIE | UCRXIE; //enable tx + rx interrupt
+//  UCA0IE |= UCTXIE | UCRXIE; //enable tx + rx interrupt
 }
 
 void uart_putc(unsigned char data)
 {
   UCA0TXBUF = data;
-  UCA0IE |=  UCTXIE;
-  UCA0IFG |= UCTXIFG;
-  LPM0;
+//  UCA0IE |=  UCTXIE;
+//  UCA0IFG |= UCTXIFG;
+//  LPM0;
 }
 
-
+/*
 #pragma vector = USCI_A0_VECTOR
 __interrupt void A0_interrupt(void) {
   __bic_SR_register_on_exit(LPM0_bits);  // Clear LPM0 mode
 }
-
+*/

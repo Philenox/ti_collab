@@ -24,7 +24,9 @@ volatile unsigned int user;
 char buf[32];
 uint8_t increment;
 volatile uint8_t count;             // this is the the global counter that counts for the PWM
-volatile uint8_t global_buf[8];     // this is the the data for each buzzer
+char global_buf[32];     // this is the the data for each buzzer
+
+char pwmDbg = 0;
 
 void main(){
   WDTCTL = WDTHOLD | WDTPW;
@@ -48,7 +50,8 @@ void main(){
   __bis_SR_register(GIE);   // Enable interrupts (set GIE in SR)
   
   radio_setup();     
-  set_timer(1000000);
+  set_timer(10000);
+  uart_setup();
   
 //  LPM4;
   while (1){
@@ -57,15 +60,18 @@ void main(){
       msprf24_get_irq_reason();
     }
     if (rf_irq & RF24_IRQ_RX || msprf24_rx_pending()) {
-      r_rx_payload(32, buf);
+      r_rx_payload(32, global_buf);
       msprf24_irq_clear(RF24_IRQ_RX);
       P2OUT ^= (1 << 6);
+
       user = buf[0];
     } 
     else {
         user = 0xFF;
     }
 //    LPM4;
+//    __delay_cycles(1000000);
+
     
 /*   buf[0] = 128; 
     
@@ -111,6 +117,27 @@ void set_timer(unsigned int delay_time){
 __interrupt void TA0_ISR(void){
   TA0CTL &= ~(MC_1); //stop
   
+  
+// Used to test the motors
+// Ramps up and down//////////////////////  
+  static int i, j = 0;
+  i++;
+  
+/*  if(i == 100){
+    uart_putc(buf[0]);
+    if(pwmDbg == 50) j = 0;
+    if(pwmDbg == 0) j = 1;
+    
+    if(j){
+     pwmDbg++;
+    } else { 
+       pwmDbg--;
+    }
+     i = 0;
+  }
+ */
+//////////////////////////////////////////
+  
   uint8_t buf[8];
   for(int i = 0; i < 8 ; i++)
     buf[i] = global_buf[i];
@@ -123,6 +150,10 @@ __interrupt void TA0_ISR(void){
                     // when the count is 0, turn all outputs on
   if(count == 0)
   {
+    
+//    P2OUT |= (1 << 6); //For LED debugging on PWM
+    
+    
     P2OUT |= (1<<0) | (1<<1) | (1<<2) | (1<<3);
     P6OUT |= (1<<0) | (1<<1) | (1<<2) | (1<<3);
     /*//These are used for feedback configurations greater than 8  
@@ -130,6 +161,18 @@ __interrupt void TA0_ISR(void){
     */
   }
   
+  // For LED debugging on PWM
+//  if(count == pwmDbg)
+//    P2OUT &= ~(1 << 6);
+
+
+//  if(count == pwmDbg)
+//    P2OUT &= ~(1<<0);  
+   if(i == 100){
+    uart_putc(buf[0]);
+     i = 0;
+  } 
+
   //when when the counter reaches the buffer number, turn it off
   if(count == buf[0])
     P2OUT &= ~(1<<0);
