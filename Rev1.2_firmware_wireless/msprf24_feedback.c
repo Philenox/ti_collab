@@ -49,7 +49,7 @@ char spi_transfer(char inb)
 	UCA1IE = UCRXIE;
         UCA1TXBUF = inb;
 	do {
-            LPM0;
+//            LPM0;
 	} while (UCA1STAT & UCBUSY);
 	return UCA1RXBUF;
 }
@@ -61,7 +61,7 @@ int spi_transfer16(int inw)
 	UCA1IE = UCRXIE;
 	UCA1TXBUF = (inw >> 8) & 0xFF;  // Send MSB first...
 	do {
-		LPM0;
+//		LPM0;
 	} while (UCA1STAT & UCBUSY);
 	
 	retw = UCA1RXBUF << 8;
@@ -69,7 +69,7 @@ int spi_transfer16(int inw)
 	UCA1IE = UCRXIE;
 	UCA1TXBUF = inw & 0xFF;
 	do {
-		LPM0;
+//		LPM0;
 	} while (UCA1STAT & UCBUSY);
         
 	retw |= UCA1RXBUF;
@@ -668,7 +668,7 @@ void msprf24_irq_clear(unsigned char irqflag)
 #pragma vector = USCI_A1_VECTOR
 __interrupt void USCI_RX(void) {
 	UCA1IE &= ~UCRXIE;
-	__bic_SR_register_on_exit(LPM0_bits);  // Clear LPM0 mode
+//	__bic_SR_register_on_exit(LPM0_bits);  // Clear LPM0 mode
 }
 
 
@@ -676,7 +676,7 @@ __interrupt void USCI_RX(void) {
 #pragma vector = PORT1_VECTOR
 __interrupt void P1_IRQ (void) {
         if(P1IFG & nrfIRQpin){
-                __bic_SR_register_on_exit(LPM4_bits);    // Wake up
+//                __bic_SR_register_on_exit(LPM4_bits);    // Wake up
 		rf_irq |= RF24_IRQ_FLAGGED;
 		P1IFG &= ~nrfIRQpin;   // Clear interrupt flag
         }
