@@ -58,7 +58,7 @@ int spi_transfer16(int inw)
 	UCA1IE = UCRXIE;
 	UCA1TXBUF = (inw >> 8) & 0xFF;  // Send MSB first...
 	do {
-		LPM0;
+		//LPM0;
 	} while (UCA1STAT & UCBUSY);
 	
 	retw = UCA1RXBUF << 8;
@@ -66,7 +66,7 @@ int spi_transfer16(int inw)
 	UCA1IE = UCRXIE;
 	UCA1TXBUF = inw & 0xFF;
 	do {
-		LPM0;
+		//LPM0;
 	} while (UCA1STAT & UCBUSY);
         
 	retw |= UCA1RXBUF;

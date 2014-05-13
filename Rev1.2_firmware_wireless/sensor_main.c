@@ -24,49 +24,49 @@ void radio_init();
 
 void main()
 {
-	char buf[32];
-        uint8_t data = 0;
-        long temp;
-        
-        WDTCTL = WDTHOLD | WDTPW;
-        
-        UCSCTL0 |= (31 <<8); // set DCO to 31
-        UCSCTL1 |= DCORSEL0 + DCORSEL1; // frequency range
-        UCSCTL3 |= SELREF1; //set fll reference base on REFOCLK
-        UCSCTL2 |= FLLD0 + FLLD1 + 31; //set FLLD = 8, FLLN = 31, 32.756KHz * 8 *31 = 8MHz
-        UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
-              
-        radio_init();
-        adc_setup();
-        
-        P2DIR |= (1<<2); //LED debug pin
-	while(1){
-		__delay_cycles(100000);
-                for(uint8_t i = 0; i < 8; i = i+ 2)
-                {
-                  temp = adc_sample(i);
-                  buf[i] = temp & 0xff;
-                  buf[i] = temp >>8;
-                }
-		w_tx_payload(32, buf);
-		msprf24_activate_tx();
-		LPM4;
+  char buf[32];
+  long temp;
 
-		if (rf_irq & RF24_IRQ_FLAGGED) {
-                    rf_irq &= ~RF24_IRQ_FLAGGED;
+  WDTCTL = WDTHOLD | WDTPW;
 
-                    msprf24_get_irq_reason();
-                    if (rf_irq & RF24_IRQ_TX){
-                      P2OUT |= (1<<2);
-                    }
-                    if (rf_irq & RF24_IRQ_TXFAILED){
-                      P2OUT ^= (1<<2);
-                    }
+  UCSCTL0 |= (31 <<8); // set DCO to 31
+  UCSCTL1 |= DCORSEL0 + DCORSEL1; // frequency range
+  UCSCTL3 |= SELREF1; //set fll reference base on REFOCLK
+  UCSCTL2 |= FLLD0 + FLLD1 + 31; //set FLLD = 8, FLLN = 31, 32.756KHz * 8 *31 = 8MHz
+  UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
+        
+  radio_init();
+  adc_setup();
+  buf[0] = 0;
 
-                    msprf24_irq_clear(rf_irq);
-                    user = msprf24_get_last_retransmits();
-		}
-	}
+  P2DIR |= (1<<2); //LED debug pin
+  while(1){
+    __delay_cycles(1000000);
+    
+    buf[0] ^= 0xff;
+    
+    //temp = adc_sample(0);
+    //buf[0] = temp >> 4; //lop off the least significant bits
+    
+    w_tx_payload(32, buf);
+    msprf24_activate_tx();
+    //LPM4;
+
+    if (rf_irq & RF24_IRQ_FLAGGED) {
+      rf_irq &= ~RF24_IRQ_FLAGGED;
+
+      msprf24_get_irq_reason();
+      if (rf_irq & RF24_IRQ_TX){
+        P2OUT |= (1<<2);
+      }
+      if (rf_irq & RF24_IRQ_TXFAILED){
+        P2OUT ^= (1<<2);
+      }
+
+      msprf24_irq_clear(rf_irq);
+      user = msprf24_get_last_retransmits();
+    }
+  }
 }
 
 void radio_init(void)
