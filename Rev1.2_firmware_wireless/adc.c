@@ -48,7 +48,7 @@ long adc_sample(uint8_t a)
   }
   
   ADC12CTL0 |= ADC12ENC;
-  ADC12CTL0 |= ADC12SC;                   // Sampling and conversion start
+  ADC12CTL0 |= ADC12SC;                // Sampling and conversion start
   while (!(ADC12IFG & ADC12IFG0))      // wait till done sampling
   {
   }

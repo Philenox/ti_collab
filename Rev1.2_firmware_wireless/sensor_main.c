@@ -26,7 +26,8 @@ void main()
 {
   char buf[32];
   long temp;
-
+  int j = 0;
+  
   WDTCTL = WDTHOLD | WDTPW;
 
   UCSCTL0 |= (31 <<8); // set DCO to 31
@@ -41,13 +42,16 @@ void main()
     buf[i] = 0;
 
   P2DIR |= (1<<2); //LED debug pin
+  
   while(1){
-    temp = adc_sample(0);
-    buf[0] = temp >> 4; //lop off the least significant bits
+    
+    temp = adc_sample(j);
+    buf[j] = temp >> 4; //lop off the least significant bits
+    if(j < 8) j++;
+    else j = 0;
     
     __delay_cycles(1000000);
-    
-    
+        
     w_tx_payload(32, buf);
     msprf24_activate_tx();
     LPM4;

@@ -31,21 +31,31 @@ char pwmDbg = 0;
 void main(){
   WDTCTL = WDTHOLD | WDTPW;
         
-  //set all clocks to 8Mhz
+  // Set all clocks to 8Mhz
   UCSCTL0 |= (31 <<8); // set DCO to 31
   UCSCTL1 |= DCORSEL0 + DCORSEL1; // frequency range
   UCSCTL3 |= SELREF1; //set fll reference base on REFOCLK
   UCSCTL2 |= FLLD0 + FLLD1 + 31; //set FLLD = 8, FLLN = 31, 32.756KHz * 8 *31 = 8MHz
   UCSCTL4 = SELA0 + SELA1 + SELS0 + SELS1 + SELM0 + SELM1; //select the DCO clock as the source for SCLK, MCLK and ACLK
- 
-  P2DIR |= (1<<0) | (1<<1) | (1<<2) | (1<<3); //set PWM pins to output
-  P6DIR |= 0xFF; //set all PORT6 to outputs for pwm
+  
+  /* Set Motor PWMs as outputs
+    M1 -> 6.0
+    M2 -> 6.3
+    M3 -> 6.2
+    M4 -> 6.7
+    M5 -> 6.6
+    M6 -> 2.1
+    M7 -> 2.3
+    M8 -> 2.2
+  */
+  P6DIR |= (1<<0) | (1<<2) | (1<<3) | (1<<6) | (1<<7);
+  P2DIR |= (1<<1) | (1<<2) | (1<<3);
   
   P2DIR |= (1 << 6); //Set debug LED output  
   
   //initialize motor intensity to 0
   for(int i = 0; i < 8; i++)
-  global_buf[i] = 31;        
+    global_buf[i] = 20;        
   
   __bis_SR_register(GIE);   // Enable interrupts (set GIE in SR)
   
@@ -53,7 +63,8 @@ void main(){
   set_timer(10000);
   uart_setup();
   
-//  LPM4;
+  
+
   while (1){
     if (rf_irq & RF24_IRQ_FLAGGED) {
       rf_irq &= ~RF24_IRQ_FLAGGED;
@@ -63,24 +74,15 @@ void main(){
       r_rx_payload(32, global_buf);
       msprf24_irq_clear(RF24_IRQ_RX);
       P2OUT ^= (1 << 6);
+      
+//      for(int i = 0; i < 6; i++) 
+//        uart_putc(global_buf[i]);
 
-      user = buf[0];
+      user = global_buf[0];
     } 
     else {
         user = 0xFF;
     }
-//    LPM4;
-//    __delay_cycles(1000000);
-
-    
-/*   buf[0] = 128; 
-    
-    if(buf[0] > 128){
-      P2OUT |= (1 << 6);
-    } else {
-      P2OUT &= ~(1 << 6);
-    }
-*/  
   }
 }
 
@@ -117,31 +119,10 @@ void set_timer(unsigned int delay_time){
 __interrupt void TA0_ISR(void){
   TA0CTL &= ~(MC_1); //stop
   
-  
-// Used to test the motors
-// Ramps up and down//////////////////////  
-  static int i, j = 0;
-  i++;
-  
-/*  if(i == 100){
-    uart_putc(buf[0]);
-    if(pwmDbg == 50) j = 0;
-    if(pwmDbg == 0) j = 1;
-    
-    if(j){
-     pwmDbg++;
-    } else { 
-       pwmDbg--;
-    }
-     i = 0;
-  }
- */
-//////////////////////////////////////////
-  
   uint8_t buf[8];
   for(int i = 0; i < 8 ; i++)
-    buf[i] = global_buf[i];
-  
+    buf[i] = 30;//global_buf[i];
+
   count = count + 1; // increment global counter
   if (count >= 31)   // if counter exeeds 31, claer
   {
@@ -150,56 +131,35 @@ __interrupt void TA0_ISR(void){
                     // when the count is 0, turn all outputs on
   if(count == 0)
   {
-    
-//    P2OUT |= (1 << 6); //For LED debugging on PWM
-    
-    
-    P2OUT |= (1<<0) | (1<<1) | (1<<2) | (1<<3);
-    P6OUT |= (1<<0) | (1<<1) | (1<<2) | (1<<3);
-    /*//These are used for feedback configurations greater than 8  
-    P6OUT |= (1<<4) | (1<<5) | (1<<6) | (1<<7);
-    */
+    P6OUT |= (1<<0) | (1<<2) | (1<<3) | (1<<6) | (1<<7);
+    P2OUT |= (1<<1) | (1<<2) | (1<<3);
   }
   
-  // For LED debugging on PWM
-//  if(count == pwmDbg)
-//    P2OUT &= ~(1 << 6);
-
-
-//  if(count == pwmDbg)
-//    P2OUT &= ~(1<<0);  
-   if(i == 100){
-    uart_putc(buf[0]);
-     i = 0;
-  } 
-
-  //when when the counter reaches the buffer number, turn it off
-  if(count == buf[0])
-    P2OUT &= ~(1<<0);
-  if(count == buf[1])
-    P2OUT &= ~(1<<1);
-  if(count == buf[2])
-    P2OUT &= ~(1<<2);
-  if(count == buf[3])
-    P2OUT &= ~(1<<3);
-  if(count == buf[4])
-    P6OUT &= ~(1<<0);
-  if(count == buf[5])
-    P6OUT &= ~(1<<1);
+  
+  //M1
   if(count == buf[6])
-    P6OUT &= ~(1<<2);
-  if(count == buf[7])
+    P6OUT &= ~(1<<0);
+  //M2
+  if(count == buf[0])
     P6OUT &= ~(1<<3);
-
-  /* //These are used for feedback configurations greater than 8  
-  if(count == buf[8])
-    P6OUT &= ~(1<<4);
-  if(count == buf[9])
-    P6OUT &= ~(1<<5);
-  if(count == buf[10])
-    P6OUT &= ~(1<<6);  
-  if(count == buf[11])
-    P6OUT &= ~(1<<7);    
-*/  
+  //M3
+  if(count == buf[1])
+    P6OUT &= ~(1<<2);
+  //M4
+  if(count == buf[2])
+    P6OUT &= ~(1<<7);  
+  //M5
+  if(count == buf[7])
+    P6OUT &= ~(1<<6);
+  //M6
+  if(count == buf[3])
+    P2OUT &= ~(1<<1);
+  //M7
+  if(count == buf[4])
+    P2OUT &= ~(1<<3);
+  //M8
+  if(count == buf[5])
+    P2OUT &= ~(1<<2);
+    
   TA0CTL |= MC_1; //start it up again
 }
